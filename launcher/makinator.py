@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-# $Id$
-# Description
-# Author: jim
 
 # Distributed under GNU/GPL 2 license
 
@@ -29,55 +26,9 @@ Created on Mar 25, 2014
 
 from novaclient.client import Client
 from novaclient.exceptions import Unauthorized, NotFound
-from getpass import getpass
 import sys
 
 
-
-class Login(object):
-
-    def __init__(self, **kwargs):
-        self._password = kwargs.get("password", "")
-        self._username = kwargs.get("username", "")
-        self._project = kwargs.get("project", "")
-        self._authurl = kwargs.get("authurl", "")
-        
-    @property
-    def username(self):
-        return self._username
-    
-    @username.setter
-    def username(self, username):
-        self._username = username
-    
-    @property
-    def password(self):
-        return self._password
-    
-    @password.setter
-    def password(self, passwd):
-        self._password = passwd
-    
-    @property    
-    def project(self):
-        return self._project
-    
-    @project.setter
-    def project(self, project):
-        self._project = project
-        
-    @property
-    def authurl(self):
-        return self._authurl
-    
-    @authurl.setter
-    def authurl(self, authurl):
-        self._authurl = authurl
-
-
-def get_password():
-    passwd = getpass().strip()
-    return passwd
 
 def do_openstack_login(data):
     try:
@@ -145,22 +96,3 @@ def launch_virtual_machines(data, name, image, flavour, **kwargs):
                                  security_groups=[secgroups.name], 
                                  key_name=kpair.name)
     return images
-
-def main():
-    passw = get_password()
-    logininfo = Login(password=passw)
-    nova = do_openstack_login(logininfo)
-    image = get_image_name(nova, "CirrOS 0.3.1")
-    flavour = get_flavour_list(nova, "m1.tiny")
-    secgroup = get_security_group(nova)
-    keypair = get_keypairs(nova)
-    if not any([image, flavour]):
-        print >> sys.stderr, "Not enough parameters"
-        sys.exit(1)
-    imgs = launch_virtual_machines(nova, "test", image, flavour, 
-                                   secgroup=secgroup, kpair=keypair)
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())
