@@ -11,17 +11,18 @@ Created on Mar 30, 2014
 import urlparse
 
 
-class UrlException(Exception):
-    def __init__(self, value):
-        self._value = value
-        
-    def __str__(self):
-        return repr(self._value)
-
 
 class UrlChecker(object):
     def __init__(self, url):
         self._url = urlparse.urlparse(url)
+        
+    @property
+    def scheme(self):
+        return self._url.scheme
+
+    @property
+    def netloc(self):
+        return self._url.netloc
 
     def check_url_protocol(self):
         """
@@ -29,13 +30,13 @@ class UrlChecker(object):
         """
         allowed_protocols = ['http', 'https']
         if self._url.scheme not in allowed_protocols:
-            raise UrlException('Bad protocol')
+            return False
         else:
             return True
 
     def check_url_port(self):
-        port = self._url.netloc.split(':')[1]
-        if not int(port) == 5000:
-            raise UrlException('Bad port')
-        else:
-            return True
+        if self._url.netloc:
+            port = int(self._url.netloc.split(':')[1])
+            if port == 5000:
+                return True
+        return False
