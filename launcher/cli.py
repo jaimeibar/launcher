@@ -23,16 +23,25 @@ def _parse_arguments():
 
     image_group = parser.add_argument_group('Image options')
     igexclusive = image_group.add_mutually_exclusive_group(required=True)
-    igexclusive.add_argument('-i', '--image', action='store', dest='image', 
+    igexclusive.add_argument('--image', action='store', dest='image', 
                        help="Image name to launch")
-    igexclusive.add_argument('-l', '--list', action='store', dest='list', 
+    igexclusive.add_argument('--ilist', action='store', dest='list', 
                        help='List all images availables')
 
     flavour_group = parser.add_argument_group('Flavour options')
     fgexclusive = flavour_group.add_mutually_exclusive_group(required=True)
     fgexclusive.add_argument('--flavour', help='Flavour to use')
     fgexclusive.add_argument('--flist', help='List all available flavours')
+    
+    security_group = parser.add_argument_group('Security groups options')
+    sgexclusive = security_group.add_mutually_exclusive_group()
+    sgexclusive.add_argument('--secgroup', help='Security group to use')
+    sgexclusive.add_argument('--secgrouplist', help='List all available security groups')
 
+    keypair_group = parser.add_argument_group('Keypair options')
+    kgexclusive = keypair_group.add_mutually_exclusive_group()
+    kgexclusive.add_argument('--keypair', help='Keypair to use')
+    kgexclusive.add_argument('--keypairlist', help='List all available keypairs')
     return parser.parse_args()
 
 
