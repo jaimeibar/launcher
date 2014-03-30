@@ -51,8 +51,11 @@ def _parse_arguments():
 
 def is_valid_url(nurl):
     url_ = UrlChecker(nurl)
-    url_.check_url_protocol()
-    
+    proto = url_.check_url_protocol()
+    port = url_.check_url_port()
+    if not proto or not port:
+        return False
+    return True    
 
 def main():
     arguments = _parse_arguments()
@@ -62,7 +65,9 @@ def main():
         print >> sys.stderr, 'Error: No password provided'
         return 1
     url = arguments.url
-    is_valid_url(url)
+    if not is_valid_url(url):
+        print >> sys.stderr, "Url not valid"
+        return 2
     tenant = arguments.tenant
     logininfo = Login(user, pwd, url, tenant)
     return 0
