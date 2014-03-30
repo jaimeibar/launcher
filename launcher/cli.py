@@ -4,6 +4,7 @@ import sys
 import argparse
 import getpass
 from launcher.login import Login
+from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login
 
 
@@ -17,7 +18,7 @@ def _parse_arguments():
                         dest='password', 
                         help='The password will be prompted after run the program')
     parser.add_argument('--url', action='store', required=True, dest='url',
-                        help='The authentication url')
+                        help='The authentication url of the form http://hostname:5000/v2.0')
     parser.add_argument('--tenant', action='store', required=True, dest='tenant',
                         help="The tenant name")
     parser.add_argument('--instances', action='store', dest='instances', 
@@ -48,6 +49,11 @@ def _parse_arguments():
     return parser.parse_args()
 
 
+def is_valid_url(nurl):
+    url_ = UrlChecker(nurl)
+    url_.check_url_protocol()
+    
+
 def main():
     arguments = _parse_arguments()
     user = arguments.username
@@ -56,6 +62,7 @@ def main():
         print >> sys.stderr, 'Error: No password provided'
         return 1
     url = arguments.url
+    is_valid_url(url)
     tenant = arguments.tenant
     logininfo = Login(user, pwd, url, tenant)
     return 0
