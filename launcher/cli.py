@@ -20,6 +20,9 @@ def _parse_arguments():
                         help='The authentication url')
     parser.add_argument('--tenant', action='store', required=True, dest='tenant',
                         help="The tenant name")
+    parser.add_argument('--instances', action='store', dest='instances', 
+                        type=int, default=1, 
+                        help='Number of instances to launch. Default: 1')
 
     image_group = parser.add_argument_group('Image options')
     igexclusive = image_group.add_mutually_exclusive_group(required=True)
