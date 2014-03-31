@@ -29,13 +29,16 @@ class UrlChecker(object):
         Allowed protocols: http and https.
         """
         allowed_protocols = ['http', 'https']
-        if self._url.scheme not in allowed_protocols:
+        if self.scheme not in allowed_protocols:
             return False
         else:
             return True
 
     def check_url_port(self):
-        if self._url.netloc:
+        """
+        Check url port.
+        """
+        if self.netloc:
             port = int(self._url.netloc.split(':')[1])
             if port == 5000:
                 return True
