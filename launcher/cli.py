@@ -3,6 +3,7 @@
 import sys
 import argparse
 import getpass
+import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login
@@ -12,30 +13,30 @@ from launcher.makinator import do_openstack_login
 def _parse_arguments():
     parser = argparse.ArgumentParser(description="Launch virtual machines to OpenStack")
 
-    parser.add_argument('-u', '--user', action='store', required=True, 
-                        dest='username', help='The username for login')
-    parser.add_argument('-p', '--password', action='store_true', required=True,
-                        dest='password', 
-                        help='The password will be prompted after run the program')
-    parser.add_argument('--url', action='store', required=True, dest='url',
-                        help='The authentication url of the form http://hostname:5000/v2.0')
-    parser.add_argument('--tenant', action='store', required=True, dest='tenant',
-                        help="The tenant name")
+    parser.add_argument('-u', '--user', action='store', dest='username', 
+                        help='The username for login. Defaults to env[LAUNCHER_USER].')
+    parser.add_argument('-p', '--password', action='store_true', dest='password',
+                        help='The password will be prompted after run the program. Defaults to env[LAUNCHER_PASSWORD].')
+    parser.add_argument('--url', action='store', dest='url',
+                        help='The authentication url of the form http://hostname:5000/v2.0 . Defaults to env[LAUNCHER_URL].')
+    parser.add_argument('--tenant', action='store', dest='tenant',
+                        help='The tenant name. Defaults to env[LAUNCHER_TENANT].')
     parser.add_argument('--instances', action='store', dest='instances', 
                         type=int, default=1, 
                         help='Number of instances to launch. Default: 1')
 
     image_group = parser.add_argument_group('Image options')
-    igexclusive = image_group.add_mutually_exclusive_group(required=True)
+    igexclusive = image_group.add_mutually_exclusive_group()
     igexclusive.add_argument('--image', action='store', dest='image', 
                        help="Image name to launch")
-    igexclusive.add_argument('--ilist', action='store', dest='list', 
-                       help='List all images availables')
+    igexclusive.add_argument('--ilist', action='store_true', 
+                             help='List all images availables')
 
     flavour_group = parser.add_argument_group('Flavour options')
-    fgexclusive = flavour_group.add_mutually_exclusive_group(required=True)
+    fgexclusive = flavour_group.add_mutually_exclusive_group()
     fgexclusive.add_argument('--flavour', help='Flavour to use')
-    fgexclusive.add_argument('--flist', help='List all available flavours')
+    fgexclusive.add_argument('--flist', action='store_true', 
+                             help='List all available flavours')
     
     security_group = parser.add_argument_group('Security groups options')
     sgexclusive = security_group.add_mutually_exclusive_group()
@@ -55,11 +56,25 @@ def is_valid_url(nurl):
     port = url_.check_url_port()
     if not proto or not port:
         return False
-    return True    
+    return True
+
+def set_credentials(param):
+    try:
+        os.environ['LAUNCHER_' + param.upper()]
+    except KeyError, e:
+        print >> sys.stderr, 'Error. {0} not provided.'.format(e.message)
+        sys.exit(3) 
 
 def main():
     arguments = _parse_arguments()
-    user = arguments.username
+    if not arguments.username:
+        set_credentials('username')
+    elif not arguments.password:
+        set_credentials('password')
+    elif not arguments.url:
+        set_credentials('url')
+    elif not arguments.tenant:
+        set_credentials('tenant')        
     pwd = getpass.getpass().strip()
     if not pwd:
         print >> sys.stderr, 'Error: No password provided'
