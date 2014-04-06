@@ -8,6 +8,7 @@ import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
+from launcher.makinator import get_flavour_list
 
 
 
@@ -28,15 +29,16 @@ def _parse_arguments():
 
     image_group = parser.add_argument_group('Image options')
     igexclusive = image_group.add_mutually_exclusive_group()
-    igexclusive.add_argument('--image', action='store', dest='image', 
-                       help="Image name to launch")
+    igexclusive.add_argument('--image', action='store', dest='image',
+                             help="Image name to launch")
     igexclusive.add_argument('--ilist', action='store_true', dest='ilist',
                              help='List all images availables')
 
     flavour_group = parser.add_argument_group('Flavour options')
     fgexclusive = flavour_group.add_mutually_exclusive_group()
-    fgexclusive.add_argument('--flavour', help='Flavour to use')
-    fgexclusive.add_argument('--flist', action='store_true', 
+    fgexclusive.add_argument('--flavour', action='store', dest='flavour',
+                             help='Flavour to use')
+    fgexclusive.add_argument('--flist', action='store_true', dest='flist',
                              help='List all available flavours')
     
     security_group = parser.add_argument_group('Security groups options')
@@ -71,8 +73,9 @@ def main():
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
-    img = arguments.image
     pwd = arguments.password
+    img = arguments.image
+    flv = arguments.flavour
     if pwd:
         pwd = getpass.getpass().strip()
     else:
@@ -86,8 +89,11 @@ def main():
         get_image_name(nova)
     else:
         image = get_image_name(nova, img)
+    if flv is None:
+        get_flavour_list(nova)
+    else:
+        flavour = get_flavour_list(nova, "m1.tiny")
     return 0
-    flavour = get_flavour_list(nova, "m1.tiny")
     secgroup = get_security_group(nova)
     keypair = get_keypairs(nova)
     if not any([image, flavour]):
