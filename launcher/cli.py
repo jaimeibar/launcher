@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 import sys
 import argparse
 import getpass
@@ -58,41 +59,34 @@ def is_valid_url(nurl):
         return False
     return True
 
-def set_credentials(param):
+def get_credentials(param):
     try:
-        os.environ['LAUNCHER_' + param.upper()]
+        return os.environ['LAUNCHER_' + param.upper()]
     except KeyError, e:
         print >> sys.stderr, 'Error. {0} not provided.'.format(e.message)
         sys.exit(3) 
 
 def main():
     arguments = _parse_arguments()
-    if not arguments.username:
-        set_credentials('username')
-    elif not arguments.password:
-        set_credentials('password')
-    elif not arguments.url:
-        set_credentials('url')
-    elif not arguments.tenant:
-        set_credentials('tenant')        
-    pwd = getpass.getpass().strip()
-    if not pwd:
-        print >> sys.stderr, 'Error: No password provided'
-        return 1
-    url = arguments.url
+    user = arguments.username if arguments.username else get_credentials('username')
+    url = arguments.url if arguments.url else get_credentials('url')
+    tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
+    pwd = arguments.password
+    if pwd:
+        pwd = getpass.getpass().strip()
+    else:
+        pwd = get_credentials('password')
     if not is_valid_url(url):
         print >> sys.stderr, "Url not valid"
         return 2
-    tenant = arguments.tenant
-    logininfo = Login(user, pwd, url, tenant)
-    return 0
+    logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
     image = get_image_name(nova, "CirrOS 0.3.1")
     flavour = get_flavour_list(nova, "m1.tiny")
     secgroup = get_security_group(nova)
     keypair = get_keypairs(nova)
     if not any([image, flavour]):
-        print >> sys.stderr, "Not enough parameters"
+        print >> sys.stderr, 'Not enough parameters'
         sys.exit(1)
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
                                    secgroup=secgroup, kpair=keypair)
