@@ -38,8 +38,8 @@ def do_openstack_login(data):
     except Unauthorized, e:
         print >> sys.stderr, "Login error: {0}".format(e.message)
         sys.exit(1)
-    except e:
-        print >> sys.stderr, "Error: {0}".format(e.message)
+    except Exception, e:
+        print >> sys.stderr, 'Unknown error. {0}'.format(e.message)
         sys.exit(1)
 
 def get_flavour_list(data, name=""):
