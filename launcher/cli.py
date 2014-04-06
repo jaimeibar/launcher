@@ -40,7 +40,7 @@ def _parse_arguments():
                              help='Flavour to use')
     fgexclusive.add_argument('--flist', action='store_true', dest='flist',
                              help='List all available flavours')
-    
+
     security_group = parser.add_argument_group('Security groups options')
     sgexclusive = security_group.add_mutually_exclusive_group()
     sgexclusive.add_argument('--secgroup', help='Security group to use')
@@ -50,6 +50,7 @@ def _parse_arguments():
     kgexclusive = keypair_group.add_mutually_exclusive_group()
     kgexclusive.add_argument('--keypair', help='Keypair to use')
     kgexclusive.add_argument('--keypairlist', help='List all available keypairs')
+
     return parser.parse_args()
 
 
