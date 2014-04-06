@@ -97,9 +97,6 @@ def main():
     return 0
     secgroup = get_security_group(nova)
     keypair = get_keypairs(nova)
-    if not any([image, flavour]):
-        print >> sys.stderr, 'Not enough parameters'
-        sys.exit(1)
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
                                    secgroup=secgroup, kpair=keypair)
     return 0
