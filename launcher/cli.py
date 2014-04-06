@@ -7,7 +7,7 @@ import getpass
 import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
-from launcher.makinator import do_openstack_login
+from launcher.makinator import do_openstack_login, get_image_name
 
 
 
@@ -30,7 +30,7 @@ def _parse_arguments():
     igexclusive = image_group.add_mutually_exclusive_group()
     igexclusive.add_argument('--image', action='store', dest='image', 
                        help="Image name to launch")
-    igexclusive.add_argument('--ilist', action='store_true', 
+    igexclusive.add_argument('--ilist', action='store_true', dest='ilist',
                              help='List all images availables')
 
     flavour_group = parser.add_argument_group('Flavour options')
@@ -71,6 +71,7 @@ def main():
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
+    img = arguments.image
     pwd = arguments.password
     if pwd:
         pwd = getpass.getpass().strip()
@@ -81,7 +82,11 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
-    image = get_image_name(nova, "CirrOS 0.3.1")
+    if img is None:
+        get_image_name(nova)
+    else:
+        image = get_image_name(nova, img)
+    return 0
     flavour = get_flavour_list(nova, "m1.tiny")
     secgroup = get_security_group(nova)
     keypair = get_keypairs(nova)
