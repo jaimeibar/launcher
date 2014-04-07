@@ -58,7 +58,9 @@ def get_image_name(data, name=""):
     if not name:
         print "Images availables"
         for i, image in enumerate(data.images.list()):
-            print "{0} - Id: {1} ---- Name: {2}".format(i, image.id, image.name)
+            print "{0}\nId: {1}\nName: {2}\nStatus: {3}".format(i, image.id,
+                                                                image.name,
+                                                                image.status)
     else:
         try:
             return data.images.find(name=name)
