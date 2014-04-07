@@ -88,17 +88,17 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
-    if arguments.image is None:
-        get_image_name(nova)
-    else:
-        image = get_image_name(nova, arguments.image)
-        print image
-    """
-    if flv is None:
-        get_flavour_list(nova)
-    else:
-        flavour = get_flavour_list(nova, "m1.tiny")
-    """
+    if hasattr(arguments, 'image'):
+        if arguments.image is None:
+            get_image_name(nova)
+        else:
+            image = get_image_name(nova, arguments.image)
+            print image
+    elif hasattr(arguments, 'flavour'):
+        if arguments.flavour is None:
+            get_flavour_list(nova)
+        else:
+            flavour = get_flavour_list(nova, arguments.flavour)
     return 0
     secgroup = get_security_group(nova)
     keypair = get_keypairs(nova)
