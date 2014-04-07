@@ -27,15 +27,19 @@ def _parse_arguments():
                         type=int, default=1, 
                         help='Number of instances to launch. Default: 1')
 
-    image_group = parser.add_argument_group('Image options')
-    igexclusive = image_group.add_mutually_exclusive_group()
+    subparsers = parser.add_subparsers(title='Subcommands', 
+                                       description='Valid subcommands', 
+                                       help='Subcommand availables for Images and Flavours.')
+
+    image_parser = subparsers.add_parser('Image', help='Image options available')
+    igexclusive = image_parser.add_mutually_exclusive_group()
     igexclusive.add_argument('--image', action='store', dest='image',
                              help="Image name to launch")
     igexclusive.add_argument('--ilist', action='store_true', dest='ilist',
                              help='List all images availables')
 
-    flavour_group = parser.add_argument_group('Flavour options')
-    fgexclusive = flavour_group.add_mutually_exclusive_group()
+    flavour_parser = subparsers.add_parser('Flavour', help='Flavour options available')
+    fgexclusive = flavour_parser.add_mutually_exclusive_group()
     fgexclusive.add_argument('--flavour', action='store', dest='flavour',
                              help='Flavour to use')
     fgexclusive.add_argument('--flist', action='store_true', dest='flist',
@@ -75,8 +79,6 @@ def main():
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
     pwd = arguments.password
-    img = arguments.image
-    flv = arguments.flavour
     if pwd:
         pwd = getpass.getpass().strip()
     else:
@@ -86,14 +88,17 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
-    if img is None:
+    if arguments.image is None:
         get_image_name(nova)
     else:
-        image = get_image_name(nova, img)
+        image = get_image_name(nova, arguments.image)
+        print image
+    """
     if flv is None:
         get_flavour_list(nova)
     else:
         flavour = get_flavour_list(nova, "m1.tiny")
+    """
     return 0
     secgroup = get_security_group(nova)
     keypair = get_keypairs(nova)
