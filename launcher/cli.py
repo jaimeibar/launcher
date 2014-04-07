@@ -8,7 +8,7 @@ import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
-from launcher.makinator import get_flavour_list
+from launcher.makinator import get_flavour_list, get_security_group
 
 
 
@@ -47,8 +47,10 @@ def _parse_arguments():
 
     security_group = parser.add_argument_group('Security groups options')
     sgexclusive = security_group.add_mutually_exclusive_group()
-    sgexclusive.add_argument('--secgroup', help='Security group to use')
-    sgexclusive.add_argument('--secgrouplist', help='List all available security groups')
+    sgexclusive.add_argument('--secgroup', action='store', dest='secgroup',
+                             help='Security group to use')
+    sgexclusive.add_argument('--secgrouplist', action='store_true', dest='seclist',
+                             help='List all available security groups')
 
     keypair_group = parser.add_argument_group('Keypair options')
     kgexclusive = keypair_group.add_mutually_exclusive_group()
@@ -93,14 +95,13 @@ def main():
             get_image_name(nova)
         else:
             image = get_image_name(nova, arguments.image)
-            print image
     elif hasattr(arguments, 'flavour'):
         if arguments.flavour is None:
             get_flavour_list(nova)
         else:
             flavour = get_flavour_list(nova, arguments.flavour)
-    return 0
     secgroup = get_security_group(nova)
+    return 0
     keypair = get_keypairs(nova)
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
                                    secgroup=secgroup, kpair=keypair)
