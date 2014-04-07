@@ -46,7 +46,9 @@ def get_flavour_list(data, name=""):
     if not name:
         print "Flavors available"
         for i, flavor in enumerate(data.flavors.list()):
-            print "{0} - Id: {1} ---- Name: {2}".format(i, flavor.id, flavor.name)
+            print '{0}\nId: {1}\nName: {2}\nDisk: {3}\nPublic: {4}\nRam: {5}\nVcpus: {6}'.format(i, flavor.id, flavor.name,
+                                                                                                 flavor.disk, flavor.is_public,
+                                                                                                 flavor.ram, flavor.vcpus)
     else:
         try:
             return data.flavors.find(name=name)
