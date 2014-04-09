@@ -2,13 +2,14 @@
 
 
 import sys
-import argparse
 import getpass
 import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
 from launcher.makinator import get_flavour_list, get_security_group
+from launcher import argparse
+
 
 
 
@@ -16,7 +17,7 @@ def _parse_arguments():
     parser = argparse.ArgumentParser(description="Launch virtual machines to OpenStack")
 
     parser.add_argument('-u', '--user', action='store', dest='username', 
-                        help='The username for login. Defaults to env[LAUNCHER_USER].')
+                        help='The username for login. Defaults to env[LAUNCHER_USERNAME].')
     parser.add_argument('-p', '--password', action='store_true', dest='password',
                         help='The password will be prompted after run the program. Defaults to env[LAUNCHER_PASSWORD].')
     parser.add_argument('--url', action='store', dest='url',
@@ -26,6 +27,18 @@ def _parse_arguments():
     parser.add_argument('--instances', action='store', dest='instances', 
                         type=int, default=1, 
                         help='Number of instances to launch. Default: 1')
+
+    security_group = parser.add_argument_group('Security groups options')
+    sgexclusive = security_group.add_mutually_exclusive_group()
+    sgexclusive.add_argument('--secgroup', action='store', dest='secgroup',
+                             help='Security group to use')
+    sgexclusive.add_argument('--secgrouplist', action='store_true', dest='seclist',
+                             help='List all available security groups')
+
+    keypair_group = parser.add_argument_group('Keypair options')
+    kgexclusive = keypair_group.add_mutually_exclusive_group()
+    kgexclusive.add_argument('--keypair', help='Keypair to use')
+    kgexclusive.add_argument('--keypairlist', help='List all available keypairs')
 
     subparsers = parser.add_subparsers(title='Subcommands', 
                                        description='Valid subcommands', 
@@ -44,18 +57,6 @@ def _parse_arguments():
                              help='Flavour to use')
     fgexclusive.add_argument('--flist', action='store_true', dest='flist',
                              help='List all available flavours')
-
-    security_group = parser.add_argument_group('Security groups options')
-    sgexclusive = security_group.add_mutually_exclusive_group()
-    sgexclusive.add_argument('--secgroup', action='store', dest='secgroup',
-                             help='Security group to use')
-    sgexclusive.add_argument('--secgrouplist', action='store_true', dest='seclist',
-                             help='List all available security groups')
-
-    keypair_group = parser.add_argument_group('Keypair options')
-    kgexclusive = keypair_group.add_mutually_exclusive_group()
-    kgexclusive.add_argument('--keypair', help='Keypair to use')
-    kgexclusive.add_argument('--keypairlist', help='List all available keypairs')
 
     return parser.parse_args()
 
