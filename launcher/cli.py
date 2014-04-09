@@ -101,7 +101,11 @@ def main():
             get_flavour_list(nova)
         else:
             flavour = get_flavour_list(nova, arguments.flavour)
-    secgroup = get_security_group(nova)
+    if hasattr(arguments, 'secgroup'):
+        if arguments.secgroup is None:
+            get_security_group(nova)
+        else:
+            secgroup = get_security_group(nova, arguments.secgroup)
     return 0
     keypair = get_keypairs(nova)
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
