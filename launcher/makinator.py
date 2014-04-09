@@ -70,15 +70,17 @@ def get_image_name(data, name=""):
             print >> sys.stderr, "Image {0} not found".format(name)
             sys.exit(1)
 
-def get_security_group(data, name="default"):
-    try:
-        return data.security_groups.find(name=name)
-    except NotFound:
-        print >> sys.stderr, "Security group {0} not found".format(name)
-        print "Security groups"
+def get_security_group(data, name=""):
+    if not name:
+        print "Security Groups"
         for i, group in enumerate(data.security_groups.list()):
             print "{0} - Id: {1} ---- Name: {2}".format(i, group.id, group.name)
-        sys.exit(1)            
+    else:
+        try:
+            return data.security_groups.find(name=name)
+        except NotFound:
+            print >> sys.stderr, "Security group {0} not found".format(name)
+            sys.exit(1)
 
 def get_keypairs(data, name=""):
     if not name:
