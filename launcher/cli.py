@@ -7,7 +7,7 @@ import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
-from launcher.makinator import get_flavour_list, get_security_group
+from launcher.makinator import get_flavour_list, get_security_group, get_keypairs
 from launcher import argparse
 
 
@@ -25,7 +25,7 @@ def _parse_arguments():
     parser.add_argument('--tenant', action='store', dest='tenant',
                         help='The tenant name. Defaults to env[LAUNCHER_TENANT].')
     parser.add_argument('--instances', action='store', dest='instances', 
-                        type=int, default=1, 
+                        type=int, default=1,
                         help='Number of instances to launch. Default: 1')
 
     security_group = parser.add_argument_group('Security groups options')
@@ -37,8 +37,10 @@ def _parse_arguments():
 
     keypair_group = parser.add_argument_group('Keypair options')
     kgexclusive = keypair_group.add_mutually_exclusive_group()
-    kgexclusive.add_argument('--keypair', help='Keypair to use')
-    kgexclusive.add_argument('--keypairlist', help='List all available keypairs')
+    kgexclusive.add_argument('--keypair', action='store', dest='keypair',
+                             help='Keypair to use')
+    kgexclusive.add_argument('--keypairlist', action='store_true', dest='keylist',
+                             help='List all available keypairs')
 
     subparsers = parser.add_subparsers(title='Subcommands', 
                                        description='Valid subcommands', 
@@ -49,7 +51,7 @@ def _parse_arguments():
     igexclusive.add_argument('--image', action='store', dest='image',
                              help="Image name to launch")
     igexclusive.add_argument('--ilist', action='store_true', dest='ilist',
-                             help='List all images availables')
+                              help='List all images availables')
 
     flavour_parser = subparsers.add_parser('Flavour', help='Flavour options available')
     fgexclusive = flavour_parser.add_mutually_exclusive_group()
@@ -78,6 +80,7 @@ def get_credentials(param):
 
 def main():
     arguments = _parse_arguments()
+    print arguments
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
@@ -106,8 +109,12 @@ def main():
             get_security_group(nova)
         else:
             secgroup = get_security_group(nova, arguments.secgroup)
+    if hasattr(arguments, 'keypair'):
+        if arguments.keypair is None:
+            get_keypairs(nova)
+        else:
+            keypair = get_keypairs(nova, arguments.keypair)
     return 0
-    keypair = get_keypairs(nova)
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
                                    secgroup=secgroup, kpair=keypair)
     return 0
