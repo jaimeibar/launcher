@@ -2,6 +2,8 @@
 
 
 
+
+
 import argparse
 import sys
 import getpass
@@ -10,6 +12,7 @@ from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
 from launcher.makinator import get_flavour_list, get_security_group, get_keypairs
+from launcher.makinator import launch_virtual_machines
 
 
 
@@ -28,6 +31,8 @@ def _parse_arguments():
     parser.add_argument('--instances', action='store', dest='instances',
                         type=int, default=1,
                         help='Number of instances to launch. Default: 1')
+    parser.add_argument('--name', action='store', dest='name',
+                        help='Name for the instances. Default: LAUNCHER_USERNAME')
 
     img_group = parser.add_argument_group('Image options')
     imagegroup = img_group.add_mutually_exclusive_group()
@@ -77,7 +82,6 @@ def get_credentials(param):
 
 def main():
     arguments = _parse_arguments()
-    print arguments
     nargs = len(sys.argv[1:])
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
@@ -92,9 +96,15 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
+    name = arguments.name
+    image = arguments.image
     ilist = arguments.ilist
+    flavour = arguments.flavour
+    instances = arguments.instances
     flist = arguments.flist
+    secgroup = arguments.secgroup
     seclist = arguments.seclist
+    keypair = arguments.keypair
     keylist = arguments.keylist
     if any([ilist, flist, seclist, keylist]):
         if nargs > 1:
@@ -108,9 +118,17 @@ def main():
             get_security_group(nova)
         else:
             get_keypairs(nova)
-    return 0
-    imgs = launch_virtual_machines(nova, "test", image, flavour,
-                                   secgroup=secgroup, kpair=keypair)
+    else:
+        if all([image, flavour]):
+            img = get_image_name(nova, image)
+            flv = get_flavour_list(nova, flavour)
+            name = user if name is None else name
+            imgs = launch_virtual_machines(nova, name, img, flv,
+                                           instances=instances,
+                                           secgroup=secgroup, kpair=keypair)
+        else:
+            print >> sys.stderr, 'Not enough parameters'
+            sys.exit(1)
     return 0
 
 
