@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
+
+import argparse
 import sys
 import getpass
 import os
@@ -8,7 +10,6 @@ from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
 from launcher.makinator import get_flavour_list, get_security_group, get_keypairs
-from launcher import argparse
 
 
 
@@ -28,6 +29,20 @@ def _parse_arguments():
                         type=int, default=1,
                         help='Number of instances to launch. Default: 1')
 
+    img_group = parser.add_argument_group('Image options')
+    imagegroup = img_group.add_mutually_exclusive_group()
+    imagegroup.add_argument('--image', action='store', dest='image',
+                            help="Image name to launch")
+    imagegroup.add_argument('--ilist', action='store_true', dest='ilist',
+                            help='List all images availables')
+
+    fl_group = parser.add_argument_group('Flavour options')
+    flavourgroup = fl_group.add_mutually_exclusive_group()
+    flavourgroup.add_argument('--flavour', action='store', dest='flavour',
+                              help='Flavour to use')
+    flavourgroup.add_argument('--flist', action='store_true', dest='flist',
+                              help='List all available flavours')
+
     security_group = parser.add_argument_group('Security groups options')
     sgexclusive = security_group.add_mutually_exclusive_group()
     sgexclusive.add_argument('--secgroup', action='store', dest='secgroup',
@@ -41,24 +56,6 @@ def _parse_arguments():
                              help='Keypair to use')
     kgexclusive.add_argument('--keypairlist', action='store_true', dest='keylist',
                              help='List all available keypairs')
-
-    subparsers = parser.add_subparsers(title='Subcommands', 
-                                       description='Valid subcommands', 
-                                       help='Subcommand availables for Images and Flavours.')
-
-    image_parser = subparsers.add_parser('Image', help='Image options available')
-    igexclusive = image_parser.add_mutually_exclusive_group()
-    igexclusive.add_argument('--image', action='store', dest='image',
-                             help="Image name to launch")
-    igexclusive.add_argument('--ilist', action='store_true', dest='ilist',
-                              help='List all images availables')
-
-    flavour_parser = subparsers.add_parser('Flavour', help='Flavour options available')
-    fgexclusive = flavour_parser.add_mutually_exclusive_group()
-    fgexclusive.add_argument('--flavour', action='store', dest='flavour',
-                             help='Flavour to use')
-    fgexclusive.add_argument('--flist', action='store_true', dest='flist',
-                             help='List all available flavours')
 
     return parser.parse_args()
 
@@ -94,26 +91,11 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
-    if hasattr(arguments, 'image'):
-        if arguments.image is None:
-            get_image_name(nova)
-        else:
-            image = get_image_name(nova, arguments.image)
-    elif hasattr(arguments, 'flavour'):
-        if arguments.flavour is None:
-            get_flavour_list(nova)
-        else:
-            flavour = get_flavour_list(nova, arguments.flavour)
-    if hasattr(arguments, 'secgroup'):
-        if arguments.secgroup is None:
-            get_security_group(nova)
-        else:
-            secgroup = get_security_group(nova, arguments.secgroup)
-    if hasattr(arguments, 'keypair'):
-        if arguments.keypair is None:
-            get_keypairs(nova)
-        else:
-            keypair = get_keypairs(nova, arguments.keypair)
+    if arguments.ilist and arguments.flist:
+        print >> sys.stderr, "Fail."
+        sys.exit(2)
+    if arguments.ilist:
+        get_image_name(nova)
     return 0
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
                                    secgroup=secgroup, kpair=keypair)
