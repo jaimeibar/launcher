@@ -95,10 +95,10 @@ def get_keypairs(data, name=""):
             sys.exit(1)
 
 def launch_virtual_machines(data, name, image, flavour, **kwargs):
-    secgroups = kwargs.get("secgroup", None)
-    secgroups.name if kwargs.get("secgroup") else None
-    kpair = kwargs.get("kpair", None)
-    images = data.servers.create(name, image, flavour, 
-                                 security_groups=[secgroups.name], 
-                                 key_name=kpair.name)
+    secgroups = kwargs.get("secgroup")
+    kpair = kwargs.get("kpair")
+    instances = kwargs.get('instances')
+    images = data.servers.create(name, image, flavour, max_count=instances,
+                                 security_groups=[secgroups],
+                                 key_name=kpair)
     return images
