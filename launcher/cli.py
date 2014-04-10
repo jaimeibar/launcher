@@ -96,11 +96,11 @@ def main():
     flist = arguments.flist
     seclist = arguments.seclist
     keylist = arguments.keylist
-    if any([ilist, flist, seclist, keylist]) and nargs > 1:
-        print "Error. No extra parameters allowed"
-        sys.exit(2)
-    else:
-        if ilist:
+    if any([ilist, flist, seclist, keylist]):
+        if nargs > 1:
+            print "Error. No extra parameters allowed"
+            sys.exit(2)
+        elif ilist:
             get_image_name(nova)
         elif flist:
             get_flavour_list(nova)
