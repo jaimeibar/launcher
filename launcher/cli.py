@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import argparse
 import sys
 import getpass
 import os
@@ -8,7 +9,7 @@ from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
 from launcher.makinator import get_flavour_list, get_security_group, get_keypairs
-from launcher import argparse
+
 
 
 
