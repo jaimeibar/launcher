@@ -2,13 +2,14 @@
 
 
 import sys
-import argparse
 import getpass
 import os
 from launcher.login import Login
 from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
-from launcher.makinator import get_flavour_list
+from launcher.makinator import get_flavour_list, get_security_group, get_keypairs
+from launcher import argparse
+
 
 
 
@@ -16,7 +17,7 @@ def _parse_arguments():
     parser = argparse.ArgumentParser(description="Launch virtual machines to OpenStack")
 
     parser.add_argument('-u', '--user', action='store', dest='username', 
-                        help='The username for login. Defaults to env[LAUNCHER_USER].')
+                        help='The username for login. Defaults to env[LAUNCHER_USERNAME].')
     parser.add_argument('-p', '--password', action='store_true', dest='password',
                         help='The password will be prompted after run the program. Defaults to env[LAUNCHER_PASSWORD].')
     parser.add_argument('--url', action='store', dest='url',
@@ -24,36 +25,36 @@ def _parse_arguments():
     parser.add_argument('--tenant', action='store', dest='tenant',
                         help='The tenant name. Defaults to env[LAUNCHER_TENANT].')
     parser.add_argument('--instances', action='store', dest='instances', 
-                        type=int, default=1, 
+                        type=int, default=1,
                         help='Number of instances to launch. Default: 1')
 
-    subparsers = parser.add_subparsers(title='Subcommands', 
-                                       description='Valid subcommands', 
-                                       help='Subcommand availables for Images and Flavours.')
+    img_group = parser.add_argument_group('Image options')
+    imagegroup = img_group.add_mutually_exclusive_group()
+    imagegroup.add_argument('--image', action='store', dest='image',
+                            help="Image name to launch")
+    imagegroup.add_argument('--ilist', action='store_true', dest='ilist',
+                            help='List all images availables')
 
-    image_parser = subparsers.add_parser('Image', help='Image options available')
-    igexclusive = image_parser.add_mutually_exclusive_group()
-    igexclusive.add_argument('--image', action='store', dest='image',
-                             help="Image name to launch")
-    igexclusive.add_argument('--ilist', action='store_true', dest='ilist',
-                             help='List all images availables')
-
-    flavour_parser = subparsers.add_parser('Flavour', help='Flavour options available')
-    fgexclusive = flavour_parser.add_mutually_exclusive_group()
-    fgexclusive.add_argument('--flavour', action='store', dest='flavour',
-                             help='Flavour to use')
-    fgexclusive.add_argument('--flist', action='store_true', dest='flist',
-                             help='List all available flavours')
+    fl_group = parser.add_argument_group('Flavour options')
+    flavourgroup = fl_group.add_mutually_exclusive_group()
+    flavourgroup.add_argument('--flavour', action='store', dest='flavour',
+                              help='Flavour to use')
+    flavourgroup.add_argument('--flist', action='store_true', dest='flist',
+                              help='List all available flavours')
 
     security_group = parser.add_argument_group('Security groups options')
     sgexclusive = security_group.add_mutually_exclusive_group()
-    sgexclusive.add_argument('--secgroup', help='Security group to use')
-    sgexclusive.add_argument('--secgrouplist', help='List all available security groups')
+    sgexclusive.add_argument('--secgroup', action='store', dest='secgroup',
+                             help='Security group to use')
+    sgexclusive.add_argument('--secgrouplist', action='store_true', dest='seclist',
+                             help='List all available security groups')
 
     keypair_group = parser.add_argument_group('Keypair options')
     kgexclusive = keypair_group.add_mutually_exclusive_group()
-    kgexclusive.add_argument('--keypair', help='Keypair to use')
-    kgexclusive.add_argument('--keypairlist', help='List all available keypairs')
+    kgexclusive.add_argument('--keypair', action='store', dest='keypair',
+                             help='Keypair to use')
+    kgexclusive.add_argument('--keypairlist', action='store_true', dest='keylist',
+                             help='List all available keypairs')
 
     return parser.parse_args()
 
@@ -75,6 +76,7 @@ def get_credentials(param):
 
 def main():
     arguments = _parse_arguments()
+    print arguments
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
@@ -88,20 +90,12 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
-    if arguments.image is None:
+    if arguments.ilist and arguments.flist:
+        print >> sys.stderr, "Fail."
+        sys.exit(2)
+    if arguments.ilist:
         get_image_name(nova)
-    else:
-        image = get_image_name(nova, arguments.image)
-        print image
-    """
-    if flv is None:
-        get_flavour_list(nova)
-    else:
-        flavour = get_flavour_list(nova, "m1.tiny")
-    """
     return 0
-    secgroup = get_security_group(nova)
-    keypair = get_keypairs(nova)
     imgs = launch_virtual_machines(nova, "test", image, flavour, 
                                    secgroup=secgroup, kpair=keypair)
     return 0
