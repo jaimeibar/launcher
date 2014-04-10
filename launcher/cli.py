@@ -17,7 +17,7 @@ from launcher.makinator import get_flavour_list, get_security_group, get_keypair
 def _parse_arguments():
     parser = argparse.ArgumentParser(description="Launch virtual machines to OpenStack")
 
-    parser.add_argument('-u', '--user', action='store', dest='username', 
+    parser.add_argument('-u', '--user', action='store', dest='username',
                         help='The username for login. Defaults to env[LAUNCHER_USERNAME].')
     parser.add_argument('-p', '--password', action='store_true', dest='password',
                         help='The password will be prompted after run the program. Defaults to env[LAUNCHER_PASSWORD].')
@@ -25,7 +25,7 @@ def _parse_arguments():
                         help='The authentication url of the form http://hostname:5000/v2.0 . Defaults to env[LAUNCHER_URL].')
     parser.add_argument('--tenant', action='store', dest='tenant',
                         help='The tenant name. Defaults to env[LAUNCHER_TENANT].')
-    parser.add_argument('--instances', action='store', dest='instances', 
+    parser.add_argument('--instances', action='store', dest='instances',
                         type=int, default=1,
                         help='Number of instances to launch. Default: 1')
 
@@ -73,11 +73,12 @@ def get_credentials(param):
         return os.environ['LAUNCHER_' + param.upper()]
     except KeyError, e:
         print >> sys.stderr, 'Error. {0} not provided.'.format(e.message)
-        sys.exit(3) 
+        sys.exit(3)
 
 def main():
     arguments = _parse_arguments()
     print arguments
+    nargs = len(sys.argv[1:])
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
@@ -91,13 +92,24 @@ def main():
         return 2
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
-    if arguments.ilist and arguments.flist:
-        print >> sys.stderr, "Fail."
+    ilist = arguments.ilist
+    flist = arguments.flist
+    seclist = arguments.seclist
+    keylist = arguments.keylist
+    if any([ilist, flist, seclist, keylist]) and nargs > 1:
+        print "Error. No extra parameters allowed"
         sys.exit(2)
-    if arguments.ilist:
-        get_image_name(nova)
+    else:
+        if ilist:
+            get_image_name(nova)
+        elif flist:
+            get_flavour_list(nova)
+        elif seclist:
+            get_security_group(nova)
+        else:
+            get_keypairs(nova)
     return 0
-    imgs = launch_virtual_machines(nova, "test", image, flavour, 
+    imgs = launch_virtual_machines(nova, "test", image, flavour,
                                    secgroup=secgroup, kpair=keypair)
     return 0
 
