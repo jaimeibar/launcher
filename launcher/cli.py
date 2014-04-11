@@ -13,6 +13,7 @@ from launcher.urlchecker import UrlChecker
 from launcher.makinator import do_openstack_login, get_image_name
 from launcher.makinator import get_flavour_list, get_security_group, get_keypairs
 from launcher.makinator import launch_virtual_machines
+from launcher import __version__
 
 
 
@@ -20,6 +21,8 @@ from launcher.makinator import launch_virtual_machines
 def _parse_arguments():
     parser = argparse.ArgumentParser(description="Launch virtual machines to OpenStack")
 
+    parser.add_argument('-v', '--version', default=False, action='store_true',
+                        help='Display the version.')
     parser.add_argument('-u', '--user', action='store', dest='username',
                         help='The username for login. Defaults to env[LAUNCHER_USERNAME].')
     parser.add_argument('-p', '--password', action='store_true', dest='password',
@@ -82,6 +85,9 @@ def get_credentials(param):
 
 def main():
     arguments = _parse_arguments()
+    if arguments.version:
+        print(__version__)
+        return
     nargs = len(sys.argv[1:])
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
