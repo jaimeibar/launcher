@@ -117,7 +117,7 @@ def main():
     keypair = arguments.keypair
     keylist = arguments.keylist
     if any([ilist, flist, seclist, keylist]):
-        if nargs > 1:
+        if nargs > 1 and not secure:
             print "Error. No extra parameters allowed"
             return 2
         elif ilist:
