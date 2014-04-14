@@ -36,6 +36,8 @@ def _parse_arguments():
                         help='Number of instances to launch. Default: 1')
     parser.add_argument('--name', action='store', dest='name',
                         help='Name for the instances. Default: LAUNCHER_USERNAME')
+    parser.add_argument('--insecure', action='store_false', dest='insecure',
+                        help='To perform "insecure" SSL (https) requests')
 
     img_group = parser.add_argument_group('Image options')
     imagegroup = img_group.add_mutually_exclusive_group()
@@ -100,6 +102,7 @@ def main():
     if not is_valid_url(url):
         print >> sys.stderr, "Url not valid"
         return 2
+    secure = arguments.insecure
     logininfo = Login(user, pwd, tenant, url)
     nova = do_openstack_login(logininfo)
     name = arguments.name
