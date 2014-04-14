@@ -21,8 +21,6 @@ from launcher import __version__
 def _parse_arguments():
     parser = argparse.ArgumentParser(description="Launch virtual machines to OpenStack")
 
-    parser.add_argument('-v', '--version', default=False, action='store_true',
-                        help='Display the version.')
     parser.add_argument('-u', '--user', action='store', dest='username',
                         help='The username for login. Defaults to env[LAUNCHER_USERNAME].')
     parser.add_argument('-p', '--password', action='store_true', dest='password',
@@ -38,6 +36,8 @@ def _parse_arguments():
                         help='Name for the instances. Default: LAUNCHER_USERNAME')
     parser.add_argument('--insecure', action='store_false', dest='insecure',
                         help='To perform "insecure" SSL (https) requests')
+    parser.add_argument('-v', '--version', action='version', version=__version__,
+                        help='Shows program version')
 
     img_group = parser.add_argument_group('Image options')
     imagegroup = img_group.add_mutually_exclusive_group()
@@ -67,7 +67,7 @@ def _parse_arguments():
     kgexclusive.add_argument('--keypairlist', action='store_true', dest='keylist',
                              help='List all available keypairs')
 
-    return parser.parse_args()
+    return parser
 
 
 def is_valid_url(nurl):
@@ -86,11 +86,12 @@ def get_credentials(param):
         sys.exit(3)
 
 def main():
-    arguments = _parse_arguments()
-    if arguments.version:
-        print(__version__)
-        return
+    parser = _parse_arguments()
+    arguments = parser.parse_args()
     nargs = len(sys.argv[1:])
+    if not nargs:
+        parser.print_help()
+        return 1
     user = arguments.username if arguments.username else get_credentials('username')
     url = arguments.url if arguments.url else get_credentials('url')
     tenant = arguments.tenant if arguments.tenant else get_credentials('tenant')
@@ -118,7 +119,7 @@ def main():
     if any([ilist, flist, seclist, keylist]):
         if nargs > 1:
             print "Error. No extra parameters allowed"
-            sys.exit(2)
+            return 2
         elif ilist:
             get_image_name(nova)
         elif flist:
