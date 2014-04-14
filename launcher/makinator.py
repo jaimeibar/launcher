@@ -30,9 +30,9 @@ import sys
 
 
 
-def do_openstack_login(data):
+def do_openstack_login(data, issecure):
     try:
-        nova = Client(2, data.username, data.password, data.project, data.authurl)
+        nova = Client(2, data.username, data.password, data.project, data.authurl, insecure=issecure)
         nova.authenticate()
         return nova
     except Unauthorized, e:
