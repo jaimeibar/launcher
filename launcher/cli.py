@@ -34,7 +34,7 @@ def _parse_arguments():
                         help='Number of instances to launch. Default: 1')
     parser.add_argument('--name', action='store', dest='name',
                         help='Name for the instances. Default: LAUNCHER_USERNAME')
-    parser.add_argument('--insecure', action='store_false', dest='insecure',
+    parser.add_argument('--insecure', action='store_true', dest='insecure',
                         help='To perform "insecure" SSL (https) requests')
     parser.add_argument('-v', '--version', action='version', version=__version__,
                         help='Shows program version')
@@ -105,7 +105,7 @@ def main():
         return 2
     secure = arguments.insecure
     logininfo = Login(user, pwd, tenant, url)
-    nova = do_openstack_login(logininfo)
+    nova = do_openstack_login(logininfo, secure)
     name = arguments.name
     image = arguments.image
     ilist = arguments.ilist
