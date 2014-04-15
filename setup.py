@@ -2,11 +2,10 @@
 
 
 from setuptools import setup, find_packages
-from launcher import __version__
 
 
 setup(name = 'launcher',
-      version = __version__,
+      version = '0.1',
       description = 'Launch instances to OpenStack.',
       long_description = open('README.md').read(),
       classifiers = [
